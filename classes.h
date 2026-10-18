@@ -30,7 +30,7 @@ class Huffman_Tree {
         root = nullptr;
     };
 
-    void build_huffman_tree(vector<pair<char, int>> v, int current){
+    void build_huffman_tree(vector<pair<char, int>> v, long unsigned int current){
         
         if(current == v.size()) {
             return;
@@ -61,6 +61,7 @@ class Huffman_Tree {
 
             Node *new_root = new Node('\0', freq_sum, false, left_node, right_node);
             root = new_root;
+            current++;
         }
 
         else {
@@ -109,8 +110,13 @@ class Huffman_Tree {
                 if(current_element->is_leaf == false)
                     cout<<current_element->freq << " ";
                 
-                else
-                    cout<<current_element->symbol << " ";
+                else {
+
+                    if(current_element->symbol == ' ')
+                        cout<<"-space_symbol-" << " ";
+                    else
+                        cout<<current_element->symbol << " ";
+                }
 
 
                 if(current_element->left_child != nullptr)

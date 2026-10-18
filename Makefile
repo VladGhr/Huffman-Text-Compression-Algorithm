@@ -10,6 +10,8 @@ run: huffman
 
 clean:
 		rm -f huffman
+		rm -f classes.o
+		rm -f classes.h.gch
 
 .PHONY:
 		build clean

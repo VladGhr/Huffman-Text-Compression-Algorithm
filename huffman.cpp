@@ -30,7 +30,7 @@ vector<pair<char, int>> build_huffman_vector(map<char, int>& freq_dict) {
 int main() {
 
     map<char, int> freq_dict;
-    freq_dict = create_freq_dict("nigger");
+    freq_dict = create_freq_dict("banana bandana");
 
     vector<pair<char, int>> v;
 
@@ -38,6 +38,8 @@ int main() {
 
     Huffman_Tree *huffman_tree = new Huffman_Tree();
 
+    huffman_tree->build_huffman_tree(v, 0);
+    huffman_tree->print_huffman_tree();
     
     return 0;
 }
