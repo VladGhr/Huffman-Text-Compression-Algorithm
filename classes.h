@@ -4,15 +4,17 @@
 
 using namespace std;
 
-class Node {
-    public:
-        int freq;
-        char symbol;
-        bool is_leaf;
-        Node *left_child;
-        Node *right_child;
+class Node
+{
+public:
+    int freq;
+    char symbol;
+    bool is_leaf;
+    Node *left_child;
+    Node *right_child;
 
-    Node(char s, int f, bool leaf, Node *left = nullptr, Node *right = nullptr) {
+    Node(char s, int f, bool leaf, Node *left = nullptr, Node *right = nullptr)
+    {
         symbol = s;
         freq = f;
         is_leaf = leaf;
@@ -21,27 +23,32 @@ class Node {
     };
 };
 
+class Huffman_Tree
+{
+public:
+    Node *root;
 
-class Huffman_Tree {
-    public:
-        Node *root;
-
-    Huffman_Tree() {
+    Huffman_Tree()
+    {
         root = nullptr;
     };
 
-    void build_huffman_tree(vector<pair<char, int>> v, long unsigned int current){
-        
-        if(current == v.size()) {
+    void build_huffman_tree(vector<pair<char, int>> v, long unsigned int current)
+    {
+
+        if (current == v.size())
+        {
             return;
         }
 
-        if(v.size() == 0) {
+        if (v.size() == 0)
+        {
             root = nullptr;
             return;
         }
 
-        if(v.size() == 1) {
+        if (v.size() == 1)
+        {
 
             char symbol = v[0].first;
             int freq = v[0].second;
@@ -50,7 +57,8 @@ class Huffman_Tree {
             return;
         }
 
-        if(root == nullptr) {
+        if (root == nullptr)
+        {
             pair<char, int> first_element = v[current];
             pair<char, int> second_element = v[current + 1];
 
@@ -64,7 +72,8 @@ class Huffman_Tree {
             current++;
         }
 
-        else {
+        else
+        {
             int first_element = root->freq;
             pair<char, int> second_element = v[current];
 
@@ -72,62 +81,67 @@ class Huffman_Tree {
 
             int freq_sum = first_element + second_element.second;
 
-            Node *new_root = new Node('\0',freq_sum, false, root, right_node);
+            Node *new_root = new Node('\0', freq_sum, false, root, right_node);
             root = new_root;
         }
 
         build_huffman_tree(v, current + 1);
-        
     };
 
-    void print_huffman_tree() {
+    void print_huffman_tree()
+    {
 
-        if(root == nullptr) {
-            cout<<"Huffman tree is empty";
+        if (root == nullptr)
+        {
+            cout << "Huffman tree is empty";
             return;
         }
 
-        if(root->left_child == nullptr && root->right_child == nullptr) {
-            cout<<"Level 0: " << root->symbol << " : " << root->freq;
+        if (root->left_child == nullptr && root->right_child == nullptr)
+        {
+            cout << "Level 0: " << root->symbol << " : " << root->freq;
             return;
         }
 
         int level = 0;
-        queue<Node*> q;
+        queue<Node *> q;
 
         q.push(root);
 
-        while(q.empty() == 0) {
+        while (q.empty() == 0)
+        {
             int n = q.size();
 
-            cout<<"Level "<< level << " : ";
+            cout << "Level " << level << " : ";
 
-            for(int i = 0; i < n; i++) {
-                Node* current_element = q.front();
+            for (int i = 0; i < n; i++)
+            {
+                Node *current_element = q.front();
                 q.pop();
-                
 
-                if(current_element->is_leaf == false)
-                    cout<<current_element->freq << " ";
-                
-                else {
+                if (current_element->is_leaf == false)
+                    cout << current_element->freq << " ";
 
-                    if(current_element->symbol == ' ')
-                        cout<<"-space_symbol-" << " ";
+                else
+                {
+
+                    if (current_element->symbol == ' ')
+                        cout << "-space_symbol-" << " ";
                     else
-                        cout<<current_element->symbol << " ";
+                        cout << current_element->symbol << " ";
                 }
 
-
-                if(current_element->left_child != nullptr)
+                if (current_element->left_child != nullptr)
                     q.push(current_element->left_child);
-                
-                if(current_element->right_child != nullptr)
+
+                if (current_element->right_child != nullptr)
                     q.push(current_element->right_child);
             }
 
-            cout<<endl;
+            cout << endl;
             level++;
-       }
+        }
     }
+
+    
 };

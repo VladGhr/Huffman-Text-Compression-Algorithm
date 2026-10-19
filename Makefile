@@ -1,17 +1,22 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra
 CXXNOEXE = -c
-build: huffman.cpp classes.h
-		$(CXX) $(CXXFLAGS) huffman.cpp -o huffman
+build: huffman.h classes.h main.cpp
+		$(CXX) $(CXXFLAGS) main.cpp -o main
+		$(CXX) $(CXXNOEXE) huffman.h
 		$(CXX) $(CXXNOEXE) classes.h
 
-run: huffman
-		./huffman
+run: main
+		./main
 
 clean:
-		rm -f huffman
+		rm -f main
+		rm -f huffman.o
+		rm -f huffman.h.gch
 		rm -f classes.o
 		rm -f classes.h.gch
+		rm -f compressedBinary.huff
+		rm -f compressedPlain.huff
 
 .PHONY:
 		build clean
