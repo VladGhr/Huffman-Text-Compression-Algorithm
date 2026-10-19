@@ -1,16 +1,22 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra
 CXXNOEXE = -c
-build: huffman.h classes.h main.cpp
-		$(CXX) $(CXXFLAGS) main.cpp -o main
+build: huffman.h classes.h compression.cpp
+		$(CXX) $(CXXFLAGS) compression.cpp -o compression
+		$(CXX) $(CXXFLAGS) decompression.cpp -o decompression
 		$(CXX) $(CXXNOEXE) huffman.h
 		$(CXX) $(CXXNOEXE) classes.h
 
-run: main
-		./main
+run_comp: compression 
+		./compression 
+
+run_decomp: decompression
+			./decompression
+		
 
 clean:
-		rm -f main
+		rm -f compression
+		rm -f decompression
 		rm -f huffman.o
 		rm -f huffman.h.gch
 		rm -f classes.o
