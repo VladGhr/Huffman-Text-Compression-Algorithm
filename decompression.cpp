@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include </home/vladstefan/Personal/Huffman-Text-Compression-Algorithm/huffman.h>
+#include "huffman.h"
 
 using namespace std;
 
