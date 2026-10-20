@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "huffman.h"
+
 using namespace std;
 
 void write_metadata_to_binary_file(ofstream &file, map<char, int> &freq_dict)
@@ -25,11 +26,27 @@ void write_byte_stream_to_binary_file(ofstream &file, vector<unsigned char> &byt
     }
 }
 
+string read_file_to_string(const std::string& filename) {
+    
+    std::ifstream inFile(filename, std::ios::binary);
+    
+    if (!inFile) {
+        return "";
+    }
+
+    std::string s = "";
+    char c;
+
+    while (inFile.get(c)) {
+        s += c;
+    }
+
+    return s;
+}
+
 int main()
 {
     ofstream outBinaryFile("compressedBinary.huff", ios::binary);
-    ofstream outPlainFile("compressedPlain.huff");
-    ifstream inFile("input.txt");
 
     Huffman_Tree *huffman_tree = new Huffman_Tree();
 
@@ -40,11 +57,7 @@ int main()
 
     string s;
 
-    while(!inFile.eof()) {
-        string line;
-        getline(inFile, line);
-        s += line;
-    }
+    s = read_file_to_string("input.txt");
 
     freq_dict = create_freq_dict(s);
     v = build_huffman_vector(freq_dict);
@@ -53,23 +66,6 @@ int main()
     string bit_stream = create_bit_stream(s, encoding_dict);
     byte_stream = create_byte_stream(bit_stream);
     
-    
-    outPlainFile << freq_dict.size() << endl;
-
-    for (const auto &[ch, freq] : encoding_dict)
-    {
-        outPlainFile << ch << " " << freq << "\n";
-    }
-
-    outPlainFile<<bit_stream<<endl;
-
-    for(auto p : v) {
-        cout<<p.first << " " << p.second << " ";
-    }
-
-    for(unsigned char byte : byte_stream) {
-        outPlainFile<<byte;
-    }
 
     write_metadata_to_binary_file(outBinaryFile, freq_dict);
     write_byte_stream_to_binary_file(outBinaryFile, byte_stream);

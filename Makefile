@@ -25,6 +25,7 @@ clean:
 		rm -f classes.h.gch
 		rm -f compressedBinary.huff
 		rm -f compressedPlain.huff
+		rm -f decompressedPlain.txt
 
 .PHONY:
 		build clean

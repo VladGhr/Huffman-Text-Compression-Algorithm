@@ -93,6 +93,11 @@ string reassamble_text(Node *root, const string &bit_stream, long unsigned int t
     return decoded_text;
 }
 
+void write_decoded_text_to_file(ofstream &file, const string &decoded_text)
+{
+    file << decoded_text;
+}
+
 int main()
 {
     Huffman_Tree *huffman_tree = new Huffman_Tree();
@@ -101,6 +106,7 @@ int main()
     string bit_stream;
     string text;
     ifstream binary_file("compressedBinary.huff", ios::binary);
+    ofstream plain_file("decompressedPlain.txt");
     read_binary_file(binary_file, freq_dict, bit_stream);
 
     huffman_vector = build_huffman_vector(freq_dict);
@@ -114,7 +120,9 @@ int main()
 
 
     text = reassamble_text(huffman_tree->root, bit_stream, total_chars);
-    
+    write_decoded_text_to_file(plain_file, text);
+    plain_file.close();
+    binary_file.close();
 
     return 0;
 }
