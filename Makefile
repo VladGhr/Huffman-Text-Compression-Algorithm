@@ -12,7 +12,9 @@ run_comp: compression
 
 run_decomp: decompression
 			./decompression
-		
+
+run: compression decompression
+		./compression | ./decompression
 
 clean:
 		rm -f compression

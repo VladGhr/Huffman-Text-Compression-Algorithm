@@ -7,7 +7,6 @@ using namespace std;
 void write_metadata_to_binary_file(ofstream &file, map<char, int> &freq_dict)
 {
     int map_size = freq_dict.size();
-    char new_line = '\n';
 
     file.write(reinterpret_cast<const char *>(&map_size), sizeof(map_size));
 
@@ -17,7 +16,6 @@ void write_metadata_to_binary_file(ofstream &file, map<char, int> &freq_dict)
         file.write(reinterpret_cast<const char *>(&p.second), sizeof(p.second));
     }
 
-    file.write(reinterpret_cast<const char *>(&new_line), sizeof(new_line));
 }
 
 void write_byte_stream_to_binary_file(ofstream &file, vector<unsigned char> &byte_stream)
@@ -59,9 +57,19 @@ int main()
     
     outPlainFile << freq_dict.size() << endl;
 
-    for (const auto &[ch, freq] : freq_dict)
+    for (const auto &[ch, freq] : encoding_dict)
     {
         outPlainFile << ch << " " << freq << "\n";
+    }
+
+    outPlainFile<<bit_stream<<endl;
+
+    for(auto p : v) {
+        cout<<p.first << " " << p.second << " ";
+    }
+
+    for(unsigned char byte : byte_stream) {
+        outPlainFile<<byte;
     }
 
     write_metadata_to_binary_file(outBinaryFile, freq_dict);
