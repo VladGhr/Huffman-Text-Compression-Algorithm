@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include </home/vladstefan/Personal/Huffman-Text-Compression-Algorithm/huffman.h>
-
+#include "huffman.h"
 using namespace std;
 
 void write_metadata_to_binary_file(ofstream &file, map<char, int> &freq_dict)
