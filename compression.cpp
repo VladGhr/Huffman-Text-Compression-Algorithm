@@ -28,18 +28,19 @@ void write_byte_stream_to_binary_file(ofstream &file, vector<unsigned char> &byt
 
 string read_file_to_string(const std::string& filename) {
     
-    std::ifstream inFile(filename, std::ios::binary);
-    
+    ifstream inFile(filename, std::ios::binary);
+
     if (!inFile) {
         return "";
     }
 
-    std::string s = "";
+    string s = "";
     char c;
 
     while (inFile.get(c)) {
         s += c;
     }
+    inFile.close();
 
     return s;
 }
@@ -58,6 +59,8 @@ int main()
     string s;
 
     s = read_file_to_string("input.txt");
+
+
 
     freq_dict = create_freq_dict(s);
     v = build_huffman_vector(freq_dict);
