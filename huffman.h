@@ -2,7 +2,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-#include </home/vladstefan/Personal/Huffman-Text-Compression-Algorithm/classes.h>
+#include "classes.h"
 
 using namespace std;
 
