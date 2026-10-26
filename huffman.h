@@ -18,15 +18,12 @@ map<char, int> create_freq_dict(string s)
     return freq_dict;
 }
 
-vector<pair<char, int>> build_huffman_vector(map<char, int> &freq_dict)
+void build_huffman_heap(map<char, int> &freq_dict, priority_queue<Node *, vector<Node *>, Compare> &min_heap) 
 {
+    for(auto p : freq_dict) {
+        min_heap.push(new Node(p.first, p.second, true, nullptr, nullptr));
+    }
 
-    vector<pair<char, int>> sorted_freq_dict_elements(freq_dict.begin(), freq_dict.end());
-
-    sort(sorted_freq_dict_elements.begin(), sorted_freq_dict_elements.end(), [](pair<char, int> &a, pair<char, int> &b)
-         { return a.second < b.second; });
-
-    return sorted_freq_dict_elements;
 }
 
 void dfs(map<char, string> &encoding_dict, Node *root, string s)

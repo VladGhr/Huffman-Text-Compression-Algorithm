@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "huffman.h"
+#include "debug.h"
 
 using namespace std;
 
@@ -20,6 +21,7 @@ void write_metadata_to_binary_file(ofstream &file, map<char, int> &freq_dict)
 
 void write_byte_stream_to_binary_file(ofstream &file, vector<unsigned char> &byte_stream)
 {
+    // cout<<"Dimensiune byte stream: " << byte_stream.size(); 
     for (unsigned char byte : byte_stream)
     {
         file.write(reinterpret_cast<const char *>(&byte), sizeof(byte));
@@ -53,22 +55,25 @@ int main()
 
     map<char, int> freq_dict;
     map<char, string> encoding_dict;
-    vector<pair<char, int>> v;
+    priority_queue<Node *, vector<Node *>, Compare> min_heap;
     vector<unsigned char> byte_stream;
-
     string s;
-
     s = read_file_to_string("input.txt");
 
 
-
     freq_dict = create_freq_dict(s);
-    v = build_huffman_vector(freq_dict);
-    huffman_tree->build_huffman_tree(v, 0);
+    
+    build_huffman_heap(freq_dict, min_heap);
+
+    print_heap(min_heap);
+
+    huffman_tree->build_huffman_tree(min_heap);
     encoding_dict = create_encoding_dict(*huffman_tree);
     string bit_stream = create_bit_stream(s, encoding_dict);
     byte_stream = create_byte_stream(bit_stream);
     
+
+    print_huffman_tree(huffman_tree->root);
 
     write_metadata_to_binary_file(outBinaryFile, freq_dict);
     write_byte_stream_to_binary_file(outBinaryFile, byte_stream);

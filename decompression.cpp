@@ -42,25 +42,21 @@ void read_binary_file(ifstream &input_file, map<char, int> &freq_dict, string &b
     }
 }
 
-void debugg_read_all_from_binary_file(ifstream &input_file)
-{
-
-    char line;
-    ofstream out_file("binaryTest.huff", ios::binary);
-    while (input_file.read(&line, sizeof(line)))
-    {
-        out_file.write(&line, sizeof(line));
-    }
-    return;
-}
-
 string reassamble_text(Node *root, const string &bit_stream, long unsigned int total_chars)
 {
     string decoded_text = "";
-    if (root == nullptr || bit_stream.empty())
+
+    if (root == nullptr)
         return decoded_text;
 
     Node *current = root;
+
+    if (current->is_leaf == true) {
+        for(int i = 0; i < current->freq; i++) {
+            decoded_text += current->symbol;
+        }
+        return decoded_text;
+    }
 
     for (char bit : bit_stream)
     {
@@ -102,22 +98,21 @@ int main()
 {
     Huffman_Tree *huffman_tree = new Huffman_Tree();
     map<char, int> freq_dict;
-    vector<pair<char, int>> huffman_vector;
+    priority_queue<Node *, vector<Node *>, Compare> min_heap;
     string bit_stream;
     string text;
     ifstream binary_file("compressedBinary.huff", ios::binary);
     ofstream plain_file("decompressedPlain.txt");
     read_binary_file(binary_file, freq_dict, bit_stream);
 
-    huffman_vector = build_huffman_vector(freq_dict);
-    huffman_tree->build_huffman_tree(huffman_vector, 0);
+    build_huffman_heap(freq_dict, min_heap);
+    huffman_tree->build_huffman_tree(min_heap);
 
     long unsigned int total_chars = 0;
     for (const auto &[ch, freq] : freq_dict)
     {
         total_chars += freq;
     }
-
 
     text = reassamble_text(huffman_tree->root, bit_stream, total_chars);
     write_decoded_text_to_file(plain_file, text);
