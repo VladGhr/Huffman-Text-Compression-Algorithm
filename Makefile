@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra
+CXXFLAGS = -Wall -Wextra
 CXXNOEXE = -c
 build: huffman.h classes.h compression.cpp
 		$(CXX) $(CXXFLAGS) compression.cpp -o compression

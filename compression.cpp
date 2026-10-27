@@ -2,6 +2,7 @@
 #include <fstream>
 #include "huffman.h"
 #include "debug.h"
+#include <filesystem>
 
 using namespace std;
 
@@ -16,36 +17,41 @@ void write_metadata_to_binary_file(ofstream &file, map<char, int> &freq_dict)
         file.write(reinterpret_cast<const char *>(&p.first), sizeof(p.first));
         file.write(reinterpret_cast<const char *>(&p.second), sizeof(p.second));
     }
-
 }
 
 void write_byte_stream_to_binary_file(ofstream &file, vector<unsigned char> &byte_stream)
 {
-    // cout<<"Dimensiune byte stream: " << byte_stream.size(); 
     for (unsigned char byte : byte_stream)
     {
         file.write(reinterpret_cast<const char *>(&byte), sizeof(byte));
     }
 }
 
-string read_file_to_string(const std::string& filename) {
-    
+string read_file_to_string(const std::string &filename)
+{
+
     ifstream inFile(filename, std::ios::binary);
 
-    if (!inFile) {
+    if (!inFile)
+    {
+        cerr << "Nu pot deschide: " << filename << endl;
+        cerr << filesystem::current_path() << endl;
         return "";
     }
 
     string s = "";
     char c;
 
-    while (inFile.get(c)) {
+    while (inFile.get(c))
+    {
         s += c;
     }
     inFile.close();
 
     return s;
 }
+
+
 
 int main()
 {
@@ -58,22 +64,14 @@ int main()
     priority_queue<Node *, vector<Node *>, Compare> min_heap;
     vector<unsigned char> byte_stream;
     string s;
-    s = read_file_to_string("input.txt");
-
-
+    s = read_file_to_string("ablatie_dezechilibru.png");
     freq_dict = create_freq_dict(s);
-    
+
     build_huffman_heap(freq_dict, min_heap);
-
-    print_heap(min_heap);
-
     huffman_tree->build_huffman_tree(min_heap);
     encoding_dict = create_encoding_dict(*huffman_tree);
     string bit_stream = create_bit_stream(s, encoding_dict);
     byte_stream = create_byte_stream(bit_stream);
-    
-
-    print_huffman_tree(huffman_tree->root);
 
     write_metadata_to_binary_file(outBinaryFile, freq_dict);
     write_byte_stream_to_binary_file(outBinaryFile, byte_stream);

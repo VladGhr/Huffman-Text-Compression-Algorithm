@@ -5,3 +5,5 @@
 *.huff
 *.h.gch
 *.txt
+*.png
+*.png:Zone.Identifier

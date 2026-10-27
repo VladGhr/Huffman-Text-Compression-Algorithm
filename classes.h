@@ -10,8 +10,6 @@ using namespace std;
 #define DUMMY '\0'
 
 // heap custom comparator
-
-
 class Node
 {
     public:
@@ -50,14 +48,6 @@ public:
         root = nullptr;
     };
 
-    /*
-    ////////////////////////////////////////
-
-    TODO RESCRIE LOGICA DE CONSTRUIRE A ARBORELUI CU MIN HEAP
-
-    ///////////////////////////////////////
-    */
-
     void build_huffman_tree(priority_queue<Node *, vector<Node *>, Compare> &min_heap)
     {   
         //if the input text is a file made of only one char for example "aaaaaa",
@@ -68,7 +58,7 @@ public:
         if (min_heap.empty())
             return;
 
-        // while there are at least two nodes in the heap, build the tree
+        //while there are at least two nodes in the heap, build the tree
         while (min_heap.size() > 1)
         {
             only_one_char_in_text = false;
@@ -88,7 +78,7 @@ public:
         min_heap.pop();
         
         root->is_leaf = false;
-        
+
         if(only_one_char_in_text == true) {
             root->is_leaf = true;
         }
