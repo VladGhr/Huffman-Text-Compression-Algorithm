@@ -8,28 +8,20 @@
 using namespace std;
 
 
-/*
-//////////////////////////////////////
-
-IMPLEMENTEAZA COMPRESIA IN IERARHII DE FISIERE
-Ex: /director : -fisier.txt
-                -fisier2.txt
-                /director2 : -fisier3.txt
-                             -fisier4.txt
-
-/////////////////////////////////////
-*/
-
 string compress(string input_file) {
 
     string s;
+    string bit_stream;
+    string input_file_name;
+    string input_file_extension;
+    string compressed_file;
     
-    pair<string, string> file_and_extension = separate_extension(input_file);
+    pair<string, string> file_and_extension = separate_extension(input_file); 
     
-    string input_file_without_extension = file_and_extension.first;
-    string original_extension = file_and_extension.second;
+    input_file_name = file_and_extension.first;
+    input_file_extension = file_and_extension.second;
     
-    string compressed_file = input_file_without_extension + COMPRESSED_EXTENSION;
+    compressed_file = input_file_name + COMPRESSED_EXTENSION;
     
     ifstream inputFile(input_file);
     ofstream outBinaryFile(compressed_file, ios::binary);
@@ -47,7 +39,7 @@ string compress(string input_file) {
     build_huffman_heap(freq_dict, min_heap);
     huffman_tree->build_huffman_tree(min_heap);
     encoding_dict = create_encoding_dict(*huffman_tree);
-    string bit_stream = create_bit_stream(s, encoding_dict);
+    bit_stream = create_bit_stream(s, encoding_dict);
     byte_stream = create_byte_stream(bit_stream);
 
     write_metadata_to_binary_file(outBinaryFile, freq_dict);

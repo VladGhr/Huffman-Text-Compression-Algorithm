@@ -97,12 +97,18 @@ void write_decoded_text_to_file(ofstream &file, const string &decoded_text)
     file << decoded_text;
 }
 
-pair<string, string> separate_extension(string compressed_file) {
+
+/**
+ * @brief Separates the file name and the extension
+ * @param file The file with its extension
+ * @return Returns a pair:first element from the pair is the name of the file | second element from the pair is the extension          
+ */
+pair<string, string> separate_extension(string file) {
 
     vector <string> tokens;
     pair<string, string> file_and_extension;
 
-    stringstream check1(compressed_file);
+    stringstream check1(file);
 
     string intermediate;
 
