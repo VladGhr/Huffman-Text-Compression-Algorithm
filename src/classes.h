@@ -1,40 +1,49 @@
 #ifndef CLASSES_H
 #define CLASSES_H
 
+#include <cstdint>
 #include <iostream>
-#include <vector>
 #include <queue>
+#include <vector>
 
 using namespace std;
 
-#define DUMMY '\0'
+#define DUMMY 0
 
-// heap custom comparator
 class Node
 {
-    public:
-    int freq;
-    char symbol;
+public:
+    uint64_t freq;
+    unsigned char symbol;
     bool is_leaf;
+    // unique id used to break ties between nodes with equal frequency,
+    // so the tree is identical at compression and decompression time
+    // regardless of the standard library implementation.
+    // leaves: id = symbol (0..255), internal nodes: id = 256, 257, ...
+    int id;
     Node *left_child;
     Node *right_child;
-    
-    Node(char s, int f, bool leaf, Node *left = nullptr, Node *right = nullptr)
+
+    Node(unsigned char s, uint64_t f, bool leaf, int node_id, Node *left = nullptr, Node *right = nullptr)
     {
         symbol = s;
         freq = f;
         is_leaf = leaf;
+        id = node_id;
         left_child = left;
         right_child = right;
     };
 };
 
+// heap custom comparator (min-heap on freq, then on id)
 class Compare
 {
 public:
     bool operator()(Node *a, Node *b) const
     {
-        return a->freq > b->freq;
+        if (a->freq != b->freq)
+            return a->freq > b->freq;
+        return a->id > b->id;
     }
 };
 
@@ -48,40 +57,49 @@ public:
         root = nullptr;
     };
 
-    void build_huffman_tree(priority_queue<Node *, vector<Node *>, Compare> &min_heap)
-    {   
-        //if the input text is a file made of only one char for example "aaaaaa",
-        //the root is also a leaf
-        bool only_one_char_in_text = true;
+    ~Huffman_Tree()
+    {
+        delete_subtree(root);
+    }
 
-        // emtpy file
+    Huffman_Tree(const Huffman_Tree &) = delete;
+    Huffman_Tree &operator=(const Huffman_Tree &) = delete;
+
+    void build_huffman_tree(priority_queue<Node *, vector<Node *>, Compare> &min_heap)
+    {
+        // empty file
         if (min_heap.empty())
             return;
 
-        //while there are at least two nodes in the heap, build the tree
+        int next_id = 256;
+
+        // while there are at least two nodes in the heap, build the tree
         while (min_heap.size() > 1)
         {
-            only_one_char_in_text = false;
             Node *left = min_heap.top();
             min_heap.pop();
 
             Node *right = min_heap.top();
             min_heap.pop();
 
-            Node *parent = new Node(DUMMY, left->freq + right->freq, false, left, right);
+            Node *parent = new Node(DUMMY, left->freq + right->freq, false, next_id++, left, right);
             min_heap.push(parent);
         }
 
-        //if there is a single node in the heap, the building process is over
-        //if there was a single node in the heap from the beginning, its the new root
+        // the last node is the root
+        // if the input has a single distinct byte (e.g. "aaaaaa"), the root is also a leaf
         root = min_heap.top();
         min_heap.pop();
-        
-        root->is_leaf = false;
+    }
 
-        if(only_one_char_in_text == true) {
-            root->is_leaf = true;
-        }
+private:
+    static void delete_subtree(Node *node)
+    {
+        if (node == nullptr)
+            return;
+        delete_subtree(node->left_child);
+        delete_subtree(node->right_child);
+        delete node;
     }
 };
 

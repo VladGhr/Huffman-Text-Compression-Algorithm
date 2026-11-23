@@ -1,20 +1,30 @@
+#ifndef DEBUG_H
+#define DEBUG_H
+
 #include <iostream>
 #include "utils.h"
 
 using namespace std;
 
-void print_huffman_tree(Node *root)
+// prints a byte in a readable way: printable ASCII as-is, everything else as hex
+inline string printable_symbol(unsigned char c)
 {
+    if (c == ' ')
+        return "(-space-)";
+    if (c == '\n')
+        return "(-new line-)";
+    if (c >= 33 && c <= 126)
+        return string(1, static_cast<char>(c));
 
+    const char *hex = "0123456789ABCDEF";
+    return string("0x") + hex[c >> 4] + hex[c & 0xF];
+}
+
+inline void print_huffman_tree(Node *root)
+{
     if (root == nullptr)
     {
         cout << "Huffman tree is empty";
-        return;
-    }
-
-    if (root->left_child == nullptr && root->right_child == nullptr)
-    {
-        cout << "Level 0: " << root->symbol << " : " << root->freq;
         return;
     }
 
@@ -23,32 +33,21 @@ void print_huffman_tree(Node *root)
 
     q.push(root);
 
-    while (q.empty() == 0)
+    while (!q.empty())
     {
-        int n = q.size();
+        size_t n = q.size();
 
         cout << "Level " << level << " : ";
 
-        for (int i = 0; i < n; i++)
+        for (size_t i = 0; i < n; i++)
         {
             Node *current_element = q.front();
             q.pop();
 
             if (current_element->is_leaf == false)
                 cout << current_element->freq << " ";
-
             else
-            {
-
-                if (current_element->symbol == ' ')
-                    cout << "(-space_symbol-) : " << current_element->freq << " ";
-                else if (current_element->symbol == '\0')
-                    cout << "(-string terminator-) : " << current_element->freq << " ";
-                else if (current_element->symbol == '\n')
-                    cout << "(-newe line-) : " << current_element->freq << " ";
-                else
-                    cout << "(" << current_element->symbol << ") : " << current_element->freq << " ";
-            }
+                cout << "(" << printable_symbol(current_element->symbol) << ") : " << current_element->freq << " ";
 
             if (current_element->left_child != nullptr)
                 q.push(current_element->left_child);
@@ -62,28 +61,26 @@ void print_huffman_tree(Node *root)
     }
 }
 
-void print_heap(priority_queue<Node *, vector<Node *>, Compare> min_heap) {
-
-    while(!min_heap.empty()) {
+inline void print_heap(priority_queue<Node *, vector<Node *>, Compare> min_heap)
+{
+    while (!min_heap.empty())
+    {
         Node *current = min_heap.top();
-        cout<<current->symbol << " " << current->freq << endl;
+        cout << printable_symbol(current->symbol) << " " << current->freq << endl;
         min_heap.pop();
     }
-
 }
 
-void print_freq_dict(map<char, int> freq_dict) {
-
-    for(pair<char, int> p : freq_dict) {
-        cout<<p.first << " " << p.second << endl;
-    }
-
+inline void print_freq_dict(const map<unsigned char, uint64_t> &freq_dict)
+{
+    for (const auto &p : freq_dict)
+        cout << printable_symbol(p.first) << " " << p.second << endl;
 }
 
-void print_encoding_dict(map<char, string> encoding_dict) {
-
-    for(pair<char, string> p : encoding_dict) {
-        cout<<p.first << " " << p.second << endl;
-    }
-
+inline void print_encoding_dict(const map<unsigned char, string> &encoding_dict)
+{
+    for (const auto &p : encoding_dict)
+        cout << printable_symbol(p.first) << " " << p.second << endl;
 }
+
+#endif

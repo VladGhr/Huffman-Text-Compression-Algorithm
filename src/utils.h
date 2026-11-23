@@ -1,168 +1,171 @@
-#include <iostream>
+#ifndef UTILS_H
+#define UTILS_H
+
+#include <cstdint>
+#include <filesystem>
 #include <fstream>
+#include <iostream>
+#include <map>
 #include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
 #include "classes.h"
 #include "huffman.h"
 
-
 using namespace std;
 
-void read_binary_file(ifstream &input_file, map<char, int> &freq_dict, string &bit_stream)
+/*
+ * .huff file format (all integers little-endian):
+ *
+ *   4 bytes   magic "HUF1"
+ *   uint32    length of the original extension (without the dot)
+ *   N bytes   original extension, e.g. "zip" (empty if the file had none)
+ *   uint16    number of distinct bytes (0..256)
+ *   repeated: uint8 symbol, uint64 frequency
+ *   rest      Huffman-encoded payload, MSB first, last byte zero-padded
+ */
+#define HUFF_MAGIC "HUF1"
+
+// ---------- little-endian helpers (format independent of platform) ----------
+
+inline void write_uint(ofstream &file, uint64_t value, int num_bytes)
 {
-    int freq_size = 0;
-
-    input_file.read((char *)&freq_size, sizeof(freq_size));
-
-    for (int i = 0; i < freq_size; ++i)
+    for (int i = 0; i < num_bytes; i++)
     {
-        char c;
-        int freq;
-        input_file.read(&c, sizeof(c));
-        input_file.read((char *)&freq, sizeof(freq));
-        freq_dict[c] = freq;
-    }
-
-    unsigned char current_byte;
-
-    while (input_file.read((char *)&current_byte, sizeof(current_byte)))
-    {
-
-        unsigned char mask = 128;
-
-        while (mask >= 1)
-        {
-
-            if ((current_byte & mask) != 0)
-            {
-                bit_stream += '1';
-            }
-            else
-            {
-                bit_stream += '0';
-            }
-            mask = mask >> 1;
-        }
+        char b = static_cast<char>((value >> (8 * i)) & 0xFF);
+        file.write(&b, 1);
     }
 }
 
-string reassamble_text(Node *root, const string &bit_stream, long unsigned int total_chars)
+inline uint64_t read_uint(ifstream &file, int num_bytes)
 {
-    string decoded_text = "";
-
-    if (root == nullptr)
-        return decoded_text;
-
-    Node *current = root;
-
-    if (current->is_leaf == true) {
-        for(int i = 0; i < current->freq; i++) {
-            decoded_text += current->symbol;
-        }
-        return decoded_text;
-    }
-
-    for (char bit : bit_stream)
+    uint64_t value = 0;
+    for (int i = 0; i < num_bytes; i++)
     {
-        if (decoded_text.size() == total_chars)
-        {
-            break;
-        }
+        char b;
+        if (!file.read(&b, 1))
+            throw runtime_error("Corrupted .huff file: unexpected end of header");
+        value |= static_cast<uint64_t>(static_cast<unsigned char>(b)) << (8 * i);
+    }
+    return value;
+}
 
-        if (bit == '1')
-        {
-            current = current->left_child;
-        }
-        else
-        {
-            current = current->right_child;
-        }
+// ---------- file I/O ----------
 
-        if (current == nullptr)
-        {
-            break;
-        }
+// reads the whole file as raw bytes
+inline string read_file_to_string(const string &filename)
+{
+    ifstream inFile(filesystem::u8path(filename), ios::binary);
 
-        if (current->is_leaf)
-        {
-            decoded_text += current->symbol;
-            current = root;
-        }
+    if (!inFile)
+        throw runtime_error("Can't open: " + filename);
+
+    ostringstream contents;
+    contents << inFile.rdbuf();
+    return contents.str();
+}
+
+// writes raw bytes (binary mode: no \n -> \r\n translation on Windows)
+inline void write_string_to_file(const string &filename, const string &data)
+{
+    ofstream file(filesystem::u8path(filename), ios::binary);
+
+    if (!file)
+        throw runtime_error("Can't create: " + filename);
+
+    file.write(data.data(), static_cast<streamsize>(data.size()));
+}
+
+inline void write_metadata_to_binary_file(ofstream &file, const string &original_extension, const map<unsigned char, uint64_t> &freq_dict)
+{
+    file.write(HUFF_MAGIC, 4);
+
+    write_uint(file, original_extension.size(), 4);
+    file.write(original_extension.data(), static_cast<streamsize>(original_extension.size()));
+
+    write_uint(file, freq_dict.size(), 2);
+
+    for (const auto &p : freq_dict)
+    {
+        write_uint(file, p.first, 1);
+        write_uint(file, p.second, 8);
+    }
+}
+
+inline void write_byte_stream_to_binary_file(ofstream &file, const vector<unsigned char> &byte_stream)
+{
+    file.write(reinterpret_cast<const char *>(byte_stream.data()), static_cast<streamsize>(byte_stream.size()));
+}
+
+inline void read_binary_file(ifstream &input_file, string &original_extension, map<unsigned char, uint64_t> &freq_dict, vector<unsigned char> &byte_stream)
+{
+    char magic[4];
+    if (!input_file.read(magic, 4) || string(magic, 4) != HUFF_MAGIC)
+        throw runtime_error("Not a valid .huff file");
+
+    uint64_t ext_size = read_uint(input_file, 4);
+    if (ext_size > 4096)
+        throw runtime_error("Corrupted .huff file: invalid extension length");
+
+    original_extension.assign(static_cast<size_t>(ext_size), '\0');
+    if (ext_size > 0 && !input_file.read(&original_extension[0], static_cast<streamsize>(ext_size)))
+        throw runtime_error("Corrupted .huff file: unexpected end of header");
+
+    uint64_t freq_size = read_uint(input_file, 2);
+    if (freq_size > 256)
+        throw runtime_error("Corrupted .huff file: invalid symbol count");
+
+    for (uint64_t i = 0; i < freq_size; ++i)
+    {
+        unsigned char symbol = static_cast<unsigned char>(read_uint(input_file, 1));
+        freq_dict[symbol] = read_uint(input_file, 8);
     }
 
-    return decoded_text;
+    // the rest of the file is the payload
+    byte_stream.assign(istreambuf_iterator<char>(input_file), istreambuf_iterator<char>());
 }
 
-void write_decoded_text_to_file(ofstream &file, const string &decoded_text)
-{
-    file << decoded_text;
-}
-
+// ---------- paths ----------
 
 /**
  * @brief Separates the file name and the extension
- * @param file The file with its extension
- * @return Returns a pair:first element from the pair is the name of the file | second element from the pair is the extension          
+ * @param file The file with its extension (may contain directories)
+ * @return Returns a pair: first element is the path without the last extension
+ *         (e.g. "C:/dir.x/archive.tar" for "C:/dir.x/archive.tar.gz"),
+ *         second element is the last extension without the dot ("gz"), or "" if there is none
  */
-pair<string, string> separate_extension(string file) {
-
-    vector <string> tokens;
-    pair<string, string> file_and_extension;
-
-    stringstream check1(file);
-
-    string intermediate;
-
-    while(getline(check1, intermediate, '.')) {
-        tokens.push_back(intermediate);
-    }
-
-    file_and_extension.first = tokens[0];
-    file_and_extension.second = tokens[1];
-
-    return file_and_extension;  
-}
-
-void write_metadata_to_binary_file(ofstream &file, map<char, int> &freq_dict)
+inline pair<string, string> separate_extension(const string &file)
 {
-    int map_size = freq_dict.size();
+    filesystem::path p = filesystem::u8path(file);
 
-    file.write(reinterpret_cast<const char *>(&map_size), sizeof(map_size));
+    string extension = p.extension().u8string();
+    if (!extension.empty() && extension[0] == '.')
+        extension.erase(0, 1);
 
-    for (pair<char, int> p : freq_dict)
-    {
-        file.write(reinterpret_cast<const char *>(&p.first), sizeof(p.first));
-        file.write(reinterpret_cast<const char *>(&p.second), sizeof(p.second));
-    }
+    filesystem::path without_extension = p;
+    without_extension.replace_extension();
+
+    return {without_extension.u8string(), extension};
 }
 
-void write_byte_stream_to_binary_file(ofstream &file, vector<unsigned char> &byte_stream)
+/**
+ * @brief Returns a path that does not exist yet, so an existing file is never overwritten.
+ *        "dir/name.ext" -> "dir/name.ext", or "dir/name_decompressed.ext", "dir/name_decompressed_2.ext", ...
+ */
+inline string unique_output_path(const string &name_without_extension, const string &extension)
 {
-    for (unsigned char byte : byte_stream)
-    {
-        file.write(reinterpret_cast<const char *>(&byte), sizeof(byte));
-    }
+    string dot_ext = extension.empty() ? "" : "." + extension;
+
+    string candidate = name_without_extension + dot_ext;
+    if (!filesystem::exists(filesystem::u8path(candidate)))
+        return candidate;
+
+    candidate = name_without_extension + "_decompressed" + dot_ext;
+    for (int i = 2; filesystem::exists(filesystem::u8path(candidate)); i++)
+        candidate = name_without_extension + "_decompressed_" + to_string(i) + dot_ext;
+
+    return candidate;
 }
 
-string read_file_to_string(const std::string &filename)
-{
-
-    ifstream inFile(filename, std::ios::binary);
-
-    if (!inFile)
-    {
-        cerr << "Cant open: " << filename << endl;
-        cerr << filesystem::current_path() << endl;
-        return "";
-    }
-
-    string s = "";
-    char c;
-
-    while (inFile.get(c))
-    {
-        s += c;
-    }
-    inFile.close();
-
-    return s;
-}
+#endif
