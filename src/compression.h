@@ -34,7 +34,7 @@ inline string compress(const string &input_file)
     map<unsigned char, string> encoding_dict = create_encoding_dict(huffman_tree);
     vector<unsigned char> byte_stream = create_byte_stream(data, encoding_dict);
 
-    ofstream outBinaryFile(filesystem::u8path(compressed_file), ios::binary);
+    ofstream outBinaryFile(path_from_utf8(compressed_file), ios::binary);
     if (!outBinaryFile)
         throw runtime_error("Can't create: " + compressed_file);
 

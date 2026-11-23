@@ -15,7 +15,7 @@ using namespace std;
  */
 inline string decompress(const string &compressed_file)
 {
-    ifstream binary_file(filesystem::u8path(compressed_file), ios::binary);
+    ifstream binary_file(path_from_utf8(compressed_file), ios::binary);
     if (!binary_file)
         throw runtime_error("Can't open: " + compressed_file);
 

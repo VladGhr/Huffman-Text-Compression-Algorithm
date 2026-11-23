@@ -27,6 +27,26 @@ using namespace std;
  */
 #define HUFF_MAGIC "HUF1"
 
+// ---------- UTF-8 path helpers ----------
+// file names are kept as UTF-8 std::string (what Qt's toStdString() returns);
+// these convert them to/from filesystem::path so non-ASCII names work on Windows.
+// filesystem::u8path is deprecated since C++20, so it is only used before C++20.
+
+inline filesystem::path path_from_utf8(const string &s)
+{
+#if defined(__cpp_char8_t)
+    return filesystem::path(std::u8string(s.begin(), s.end()));
+#else
+    return filesystem::u8path(s);
+#endif
+}
+
+inline string utf8_from_path(const filesystem::path &p)
+{
+    auto u = p.u8string(); // std::string before C++20, std::u8string since C++20
+    return string(u.begin(), u.end());
+}
+
 // ---------- little-endian helpers (format independent of platform) ----------
 
 inline void write_uint(ofstream &file, uint64_t value, int num_bytes)
@@ -56,7 +76,7 @@ inline uint64_t read_uint(ifstream &file, int num_bytes)
 // reads the whole file as raw bytes
 inline string read_file_to_string(const string &filename)
 {
-    ifstream inFile(filesystem::u8path(filename), ios::binary);
+    ifstream inFile(path_from_utf8(filename), ios::binary);
 
     if (!inFile)
         throw runtime_error("Can't open: " + filename);
@@ -69,7 +89,7 @@ inline string read_file_to_string(const string &filename)
 // writes raw bytes (binary mode: no \n -> \r\n translation on Windows)
 inline void write_string_to_file(const string &filename, const string &data)
 {
-    ofstream file(filesystem::u8path(filename), ios::binary);
+    ofstream file(path_from_utf8(filename), ios::binary);
 
     if (!file)
         throw runtime_error("Can't create: " + filename);
@@ -137,16 +157,16 @@ inline void read_binary_file(ifstream &input_file, string &original_extension, m
  */
 inline pair<string, string> separate_extension(const string &file)
 {
-    filesystem::path p = filesystem::u8path(file);
+    filesystem::path p = path_from_utf8(file);
 
-    string extension = p.extension().u8string();
+    string extension = utf8_from_path(p.extension());
     if (!extension.empty() && extension[0] == '.')
         extension.erase(0, 1);
 
     filesystem::path without_extension = p;
     without_extension.replace_extension();
 
-    return {without_extension.u8string(), extension};
+    return {utf8_from_path(without_extension), extension};
 }
 
 /**
@@ -158,11 +178,11 @@ inline string unique_output_path(const string &name_without_extension, const str
     string dot_ext = extension.empty() ? "" : "." + extension;
 
     string candidate = name_without_extension + dot_ext;
-    if (!filesystem::exists(filesystem::u8path(candidate)))
+    if (!filesystem::exists(path_from_utf8(candidate)))
         return candidate;
 
     candidate = name_without_extension + "_decompressed" + dot_ext;
-    for (int i = 2; filesystem::exists(filesystem::u8path(candidate)); i++)
+    for (int i = 2; filesystem::exists(path_from_utf8(candidate)); i++)
         candidate = name_without_extension + "_decompressed_" + to_string(i) + dot_ext;
 
     return candidate;
