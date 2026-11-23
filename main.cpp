@@ -295,9 +295,16 @@ int main(int argc, char *argv[])
 
     window.resize(560, 560);
 
-    QString icon_path = QCoreApplication::applicationDirPath() + "/../icons/zip_file_image.png";
-    if (QFileInfo::exists(icon_path))
-        window.setWindowIcon(QIcon(icon_path));
+    // icons/ next to the executable (packaged app) or one level up (build folder in the repo)
+    for (const QString &icon_path : {QCoreApplication::applicationDirPath() + "/icons/zip_file_image.png",
+                                     QCoreApplication::applicationDirPath() + "/../icons/zip_file_image.png"})
+    {
+        if (QFileInfo::exists(icon_path))
+        {
+            window.setWindowIcon(QIcon(icon_path));
+            break;
+        }
+    }
 
     // header
     QLabel *title = new QLabel("Huffman Compressor");

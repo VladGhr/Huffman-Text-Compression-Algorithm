@@ -8,3 +8,7 @@
 !CMakeLists.txt
 *.png
 *.png:Zone.Identifier
+
+# generated: release build and packaged app
+out-release/
+dist/
