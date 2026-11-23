@@ -23,13 +23,9 @@
 #include <functional>
 #include <stdexcept>
 
-#include "compression.h"
-#include "decompression.h"
+#include "pipeline.h"
 
-// ---------------------------------------------------------------------------
-// Drop zone: a dashed box that accepts a single file by drag and drop,
-// with a "Browse" button inside that opens the file explorer.
-// ---------------------------------------------------------------------------
+
 class DropZone : public QFrame
 {
 public:
@@ -55,9 +51,20 @@ public:
         detail_label->setAlignment(Qt::AlignCenter);
         detail_label->setWordWrap(true);
 
-        browse_button = new QPushButton("Browse...", this);
-        browse_button->setObjectName("browseButton");
-        browse_button->setCursor(Qt::PointingHandCursor);
+        browse_button = new QPushButton("Browse file...", this);
+        browse_folder_button = new QPushButton("Browse folder...", this);
+        for (QPushButton *b : {browse_button, browse_folder_button})
+        {
+            b->setObjectName("browseButton");
+            b->setCursor(Qt::PointingHandCursor);
+        }
+
+        QHBoxLayout *browse_row = new QHBoxLayout;
+        browse_row->setSpacing(8);
+        browse_row->addStretch();
+        browse_row->addWidget(browse_button);
+        browse_row->addWidget(browse_folder_button);
+        browse_row->addStretch();
 
         QVBoxLayout *layout = new QVBoxLayout(this);
         layout->setContentsMargins(24, 24, 24, 24);
@@ -67,13 +74,18 @@ public:
         layout->addWidget(title_label);
         layout->addWidget(detail_label);
         layout->addSpacing(8);
-        layout->addWidget(browse_button, 0, Qt::AlignCenter);
+        layout->addLayout(browse_row);
         layout->addStretch();
 
         QObject::connect(browse_button, &QPushButton::clicked, this, [this]() {
-            QString start_dir = current_file.isEmpty() ? QDir::homePath() : QFileInfo(current_file).absolutePath();
-            QString path = QFileDialog::getOpenFileName(this, "Select file", start_dir,
+            QString path = QFileDialog::getOpenFileName(this, "Select file", start_directory(),
                                                         "All files (*);;Huffman archives (*.huff)");
+            if (!path.isEmpty())
+                select_file(path);
+        });
+
+        QObject::connect(browse_folder_button, &QPushButton::clicked, this, [this]() {
+            QString path = QFileDialog::getExistingDirectory(this, "Select folder", start_directory());
             if (!path.isEmpty())
                 select_file(path);
         });
@@ -81,21 +93,23 @@ public:
         show_empty();
     }
 
+    // accepts a file or a folder
     void select_file(const QString &path)
     {
         QFileInfo info(path);
         current_file = info.absoluteFilePath();
+        bool is_folder = info.isDir();
 
-        title_label->setText(info.fileName());
+        title_label->setText(info.fileName().isEmpty() ? QDir::toNativeSeparators(current_file) : info.fileName());
+        icon_label->setPixmap(style()->standardIcon(is_folder ? QStyle::SP_DirIcon : QStyle::SP_FileIcon).pixmap(48, 48));
 
-        // single line: size · folder (long folders are shortened in the middle, full path in the tooltip)
-        QString size_text = QLocale().formattedDataSize(info.size()) + "   ·   ";
+        // single line: size (or "Folder") · location (shortened in the middle, full path in the tooltip)
+        QString size_text = (is_folder ? QString("Folder") : QLocale().formattedDataSize(info.size())) + "   ·   ";
         QString folder = QDir::toNativeSeparators(info.absolutePath());
         int available = qMax(120, width() - 64 - detail_label->fontMetrics().horizontalAdvance(size_text));
         detail_label->setWordWrap(false);
         detail_label->setText(size_text + detail_label->fontMetrics().elidedText(folder, Qt::ElideMiddle, available));
         detail_label->setToolTip(QDir::toNativeSeparators(info.absoluteFilePath()));
-        browse_button->setText("Change file...");
 
         if (on_file_selected)
             on_file_selected(current_file);
@@ -135,12 +149,19 @@ private:
     QLabel *title_label;
     QLabel *detail_label;
     QPushButton *browse_button;
+    QPushButton *browse_folder_button;
     QString current_file;
 
     void show_empty()
     {
-        title_label->setText("Drag and drop a file here");
-        detail_label->setText("any file to compress, or a .huff file to decompress");
+        title_label->setText("Drag and drop a file or folder here");
+        detail_label->setText("any file or folder to compress, or a .huff file to decompress");
+    }
+
+    // the dialogs open where the last selection was
+    QString start_directory() const
+    {
+        return current_file.isEmpty() ? QDir::homePath() : QFileInfo(current_file).absolutePath();
     }
 
     void set_drag_active(bool active)
@@ -150,7 +171,6 @@ private:
         style()->polish(this);
     }
 
-    // returns the path if exactly one local regular file is dragged, otherwise ""
     static QString single_local_file(const QMimeData *mime)
     {
         if (mime == nullptr || !mime->hasUrls() || mime->urls().size() != 1)
@@ -161,11 +181,10 @@ private:
             return QString();
 
         QString path = url.toLocalFile();
-        return QFileInfo(path).isFile() ? path : QString();
+        QFileInfo info(path);
+        return (info.isFile() || info.isDir()) ? path : QString();
     }
 };
-
-// ---------------------------------------------------------------------------
 
 static const char *STYLE_SHEET = R"(
 QWidget#window {
@@ -273,8 +292,7 @@ int main(int argc, char *argv[])
     window.setObjectName("window");
     window.setWindowTitle("Huffman Compressor");
     window.setStyleSheet(STYLE_SHEET);
-    // no explicit minimum size: the layout computes it, so the window grows
-    // instead of squeezing the drop zone when the status message appears
+
     window.resize(560, 560);
 
     QString icon_path = QCoreApplication::applicationDirPath() + "/../icons/zip_file_image.png";
@@ -284,7 +302,7 @@ int main(int argc, char *argv[])
     // header
     QLabel *title = new QLabel("Huffman Compressor");
     title->setObjectName("appTitle");
-    QLabel *subtitle = new QLabel("Compress any file into a .huff archive, or restore the original from one.");
+    QLabel *subtitle = new QLabel("Compress any file or folder into a .huff archive, or restore the original from one.");
     subtitle->setObjectName("appSubtitle");
     subtitle->setWordWrap(true);
 
@@ -300,8 +318,8 @@ int main(int argc, char *argv[])
         b->setCursor(Qt::PointingHandCursor);
         b->setEnabled(false);
     }
-    compress_button->setToolTip("Create a .huff archive next to the selected file");
-    decompress_button->setToolTip("Restore the original file from a .huff archive");
+    compress_button->setToolTip("Create a .huff archive next to the selected file or folder");
+    decompress_button->setToolTip("Restore the original file or folder from a .huff archive");
 
     QHBoxLayout *actions = new QHBoxLayout;
     actions->setSpacing(12);
@@ -344,7 +362,6 @@ int main(int argc, char *argv[])
         bool is_huff = file.endsWith(".huff", Qt::CaseInsensitive);
 
         compress_button->setEnabled(!busy && has_file);
-        // only .huff files can be decompressed
         decompress_button->setEnabled(!busy && has_file && is_huff);
         drop_zone->setEnabled(!busy);
     };
@@ -355,7 +372,6 @@ int main(int argc, char *argv[])
         update_buttons();
     };
 
-    // runs compress()/decompress() on a worker thread so the window stays responsive
     auto run = [&](bool compressing) {
         QString input = drop_zone->file();
         if (input.isEmpty())
@@ -377,21 +393,27 @@ int main(int argc, char *argv[])
 
             try
             {
-                std::string out = compressing ? compress(input_utf8) : decompress(input_utf8);
-                output = QString::fromStdString(out);
-
-                qint64 in_size = QFileInfo(QString::fromStdString(input_utf8)).size();
-                qint64 out_size = QFileInfo(output).size();
+                PipelineResult r = compressing ? compress_path(input_utf8) : decompress_path(input_utf8);
+                output = QString::fromStdString(r.output);
                 QLocale locale;
 
-                result_text = QString("%1 %2\n%3  →  %4")
-                                  .arg(compressing ? "Compressed to" : "Decompressed to")
-                                  .arg(QDir::toNativeSeparators(output))
-                                  .arg(locale.formattedDataSize(in_size))
-                                  .arg(locale.formattedDataSize(out_size));
+                QString action = compressing ? (r.is_folder ? "Compressed folder to" : "Compressed to")
+                                             : (r.is_folder ? "Extracted folder to" : "Decompressed to");
 
-                if (compressing && in_size > 0)
-                    result_text += QString("  (%1% of the original)").arg(100.0 * out_size / in_size, 0, 'f', 1);
+                result_text = QString("%1 %2\n%3  →  %4")
+                                  .arg(action)
+                                  .arg(QDir::toNativeSeparators(output))
+                                  .arg(locale.formattedDataSize(static_cast<qint64>(r.input_bytes)))
+                                  .arg(locale.formattedDataSize(static_cast<qint64>(r.output_bytes)));
+
+                if (compressing && r.input_bytes > 0)
+                    result_text += QString("  (%1% of the original)").arg(100.0 * r.output_bytes / r.input_bytes, 0, 'f', 1);
+
+                if (r.is_folder)
+                    result_text += QString("\n%1 files, %2 folders").arg(r.files).arg(r.directories);
+
+                for (const std::string &warning : r.warnings)
+                    result_text += "\n⚠ " + QString::fromStdString(warning);
 
                 kind = "success";
             }
@@ -422,8 +444,11 @@ int main(int argc, char *argv[])
     QObject::connect(compress_button, &QPushButton::clicked, [&]() { run(true); });
     QObject::connect(decompress_button, &QPushButton::clicked, [&]() { run(false); });
     QObject::connect(open_folder_button, &QPushButton::clicked, [&]() {
-        if (!last_output.isEmpty())
-            QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(last_output).absolutePath()));
+        if (last_output.isEmpty())
+            return;
+        // an extracted folder is opened itself; for a file, its containing folder
+        QFileInfo info(last_output);
+        QDesktopServices::openUrl(QUrl::fromLocalFile(info.isDir() ? info.absoluteFilePath() : info.absolutePath()));
     });
 
     window.show();

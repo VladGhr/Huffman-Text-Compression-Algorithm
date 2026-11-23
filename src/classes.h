@@ -4,11 +4,20 @@
 #include <cstdint>
 #include <iostream>
 #include <queue>
+#include <string>
 #include <vector>
 
 using namespace std;
 
 #define DUMMY 0
+
+enum class EntryType : uint8_t {
+    File    = 0,
+    Dir     = 1,
+    Symlink = 2,
+    End     = 0xFF
+};
+
 
 class Node
 {
@@ -103,4 +112,38 @@ private:
     }
 };
 
+class GlobalHeader
+{
+    public:
+        uint32_t magic;
+        uint8_t version;
+        uint32_t reserved;
+
+        GlobalHeader(uint32_t magic, uint8_t version, uint32_t reserved) {
+            this->magic = magic;
+            this->version = version;
+            this->reserved = reserved;
+        }
+};
+
+class EntryHeader
+{
+    public:
+        EntryType type;
+        string path;          // relative to the archive root, UTF-8, '/' as separator
+        uint32_t perms;
+        int64_t mtime;        // seconds since the Unix epoch (signed: dates before 1970 are possible)
+        uint64_t size;        // bytes of data: file size, 0 for Dir, target length for Symlink
+        string link_target;   // only for Symlink: where the link points (UTF-8, '/'); empty otherwise
+
+        EntryHeader(EntryType type, string path, uint32_t perms, int64_t mtime, uint64_t size,
+                    string link_target = "") {
+            this->type = type;
+            this->path = path;
+            this->perms = perms;
+            this->mtime = mtime;
+            this->size = size;
+            this->link_target = link_target;
+        }
+};
 #endif

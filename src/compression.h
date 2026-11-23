@@ -9,17 +9,19 @@ using namespace std;
 
 /**
  * @brief Compresses any file (text or binary) into "<name>.huff" next to it
- * @param input_file Path to the file to compress
+ * @param input_file  Path to the file to compress
+ * @param output_file Optional: where to write the result (default: "<name>.huff" next to the input).
+ *                    The extension stored in the archive is always the input's.
  * @return Path of the compressed file
  * @throws runtime_error if the input can't be read or the output can't be written
  */
-inline string compress(const string &input_file)
+inline string compress(const string &input_file, const string &output_file = "")
 {
     pair<string, string> file_and_extension = separate_extension(input_file);
 
     string input_file_name = file_and_extension.first;
     string input_file_extension = file_and_extension.second;
-    string compressed_file = input_file_name + COMPRESSED_EXTENSION;
+    string compressed_file = output_file.empty() ? input_file_name + COMPRESSED_EXTENSION : output_file;
 
     string data = read_file_to_string(input_file);
 
