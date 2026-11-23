@@ -50,7 +50,7 @@ cmake_ninja_workdir = E$:/Huffman-Text-Compression-Algorithm/build/
 build cmake_object_order_depends_target_compressor: phony || compressor_autogen compressor_autogen/mocs_compilation.cpp compressor_autogen/timestamp compressor_autogen_timestamp_deps
 
 build CMakeFiles/compressor.dir/compressor_autogen/mocs_compilation.cpp.obj: CXX_COMPILER__compressor_unscanned_Debug E$:/Huffman-Text-Compression-Algorithm/build/compressor_autogen/mocs_compilation.cpp || cmake_object_order_depends_target_compressor
-  DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -DWINVER=0x0A00 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN32_WINNT=0x0A00 -D_WIN64
+  DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -DWINVER=0x0A00 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN32_WINNT=0x0A00 -D_WIN64
   DEP_FILE = CMakeFiles\compressor.dir\compressor_autogen\mocs_compilation.cpp.obj.d
   FLAGS = -g -std=gnu++17
   INCLUDES = -IE:/Huffman-Text-Compression-Algorithm/build/compressor_autogen/include -IE:/Huffman-Text-Compression-Algorithm/src -isystem E:/mysys64/ucrt64/include/qt6/QtWidgets -isystem E:/mysys64/ucrt64/include/qt6 -isystem E:/mysys64/ucrt64/include/qt6/QtCore -isystem E:/mysys64/ucrt64/share/qt6/mkspecs/win32-g++ -isystem E:/mysys64/ucrt64/include/qt6/QtGui
@@ -58,7 +58,7 @@ build CMakeFiles/compressor.dir/compressor_autogen/mocs_compilation.cpp.obj: CXX
   OBJECT_FILE_DIR = CMakeFiles\compressor.dir\compressor_autogen
 
 build CMakeFiles/compressor.dir/main.cpp.obj: CXX_COMPILER__compressor_unscanned_Debug E$:/Huffman-Text-Compression-Algorithm/main.cpp || cmake_object_order_depends_target_compressor
-  DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -DWINVER=0x0A00 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN32_WINNT=0x0A00 -D_WIN64
+  DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -DWINVER=0x0A00 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN32_WINNT=0x0A00 -D_WIN64
   DEP_FILE = CMakeFiles\compressor.dir\main.cpp.obj.d
   FLAGS = -g -std=gnu++17
   INCLUDES = -IE:/Huffman-Text-Compression-Algorithm/build/compressor_autogen/include -IE:/Huffman-Text-Compression-Algorithm/src -isystem E:/mysys64/ucrt64/include/qt6/QtWidgets -isystem E:/mysys64/ucrt64/include/qt6 -isystem E:/mysys64/ucrt64/include/qt6/QtCore -isystem E:/mysys64/ucrt64/share/qt6/mkspecs/win32-g++ -isystem E:/mysys64/ucrt64/include/qt6/QtGui
@@ -73,9 +73,10 @@ build CMakeFiles/compressor.dir/main.cpp.obj: CXX_COMPILER__compressor_unscanned
 #############################################
 # Link the executable compressor.exe
 
-build compressor.exe: CXX_EXECUTABLE_LINKER__compressor_Debug CMakeFiles/compressor.dir/compressor_autogen/mocs_compilation.cpp.obj CMakeFiles/compressor.dir/main.cpp.obj | E$:/mysys64/ucrt64/lib/libQt6Widgets.dll.a E$:/mysys64/ucrt64/lib/libQt6Gui.dll.a E$:/mysys64/ucrt64/lib/libQt6Core.dll.a || compressor_autogen compressor_autogen_timestamp_deps
+build compressor.exe: CXX_EXECUTABLE_LINKER__compressor_Debug CMakeFiles/compressor.dir/compressor_autogen/mocs_compilation.cpp.obj CMakeFiles/compressor.dir/main.cpp.obj | E$:/mysys64/ucrt64/lib/libQt6Widgets.dll.a E$:/mysys64/ucrt64/lib/libQt6Gui.dll.a E$:/mysys64/ucrt64/lib/libQt6Core.dll.a E$:/mysys64/ucrt64/lib/libQt6EntryPoint.a || compressor_autogen compressor_autogen_timestamp_deps
   FLAGS = -g
-  LINK_LIBRARIES = E:/mysys64/ucrt64/lib/libQt6Widgets.dll.a  E:/mysys64/ucrt64/lib/libQt6Gui.dll.a  E:/mysys64/ucrt64/lib/libQt6Core.dll.a  -lmpr  -luserenv  -ld3d11  -ldxgi  -ldxguid  -ldcomp  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  LINK_FLAGS = -mwindows
+  LINK_LIBRARIES = E:/mysys64/ucrt64/lib/libQt6Widgets.dll.a  E:/mysys64/ucrt64/lib/libQt6Gui.dll.a  E:/mysys64/ucrt64/lib/libQt6Core.dll.a  -lmpr  -luserenv  -lmingw32  E:/mysys64/ucrt64/lib/libQt6EntryPoint.a  -lshell32  -ld3d11  -ldxgi  -ldxguid  -ldcomp  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\compressor.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
@@ -133,7 +134,7 @@ build compressor_autogen/timestamp compressor_autogen/mocs_compilation.cpp | ${c
 #############################################
 # Phony custom command for CMakeFiles\compressor_autogen_timestamp_deps
 
-build CMakeFiles/compressor_autogen_timestamp_deps | ${cmake_ninja_workdir}CMakeFiles/compressor_autogen_timestamp_deps: phony E$:/mysys64/ucrt64/share/qt6/bin/moc.exe E$:/mysys64/ucrt64/share/qt6/bin/uic.exe E$:/mysys64/ucrt64/lib/libQt6Widgets.dll.a
+build CMakeFiles/compressor_autogen_timestamp_deps | ${cmake_ninja_workdir}CMakeFiles/compressor_autogen_timestamp_deps: phony E$:/mysys64/ucrt64/share/qt6/bin/uic.exe E$:/mysys64/ucrt64/share/qt6/bin/moc.exe E$:/mysys64/ucrt64/lib/libQt6Widgets.dll.a
 
 
 #############################################

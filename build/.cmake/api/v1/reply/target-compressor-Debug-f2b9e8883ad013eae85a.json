@@ -33,6 +33,9 @@
 			"E:/mysys64/ucrt64/share/cmake/Modules/CMakeFindDependencyMacro.cmake",
 			"E:/mysys64/ucrt64/lib/cmake/Qt6/QtPublicDependencyHelpers.cmake",
 			"E:/mysys64/ucrt64/lib/cmake/Qt6Widgets/Qt6WidgetsDependencies.cmake",
+			"E:/mysys64/ucrt64/lib/cmake/Qt6EntryPointPrivate/Qt6EntryPointPrivateTargets.cmake",
+			"E:/mysys64/ucrt64/lib/cmake/Qt6EntryPointPrivate/Qt6EntryPointPrivateConfig.cmake",
+			"E:/mysys64/ucrt64/lib/cmake/Qt6Core/Qt6CoreDependencies.cmake",
 			"E:/mysys64/ucrt64/lib/cmake/Qt6Gui/Qt6GuiTargets.cmake",
 			"E:/mysys64/ucrt64/lib/cmake/Qt6Gui/Qt6GuiConfig.cmake"
 		],
@@ -138,6 +141,60 @@
 				"parent" : 17
 			},
 			{
+				"command" : 3,
+				"file" : 5,
+				"line" : 40,
+				"parent" : 15
+			},
+			{
+				"file" : 11,
+				"parent" : 19
+			},
+			{
+				"command" : 6,
+				"file" : 11,
+				"line" : 39,
+				"parent" : 20
+			},
+			{
+				"command" : 5,
+				"file" : 7,
+				"line" : 111,
+				"parent" : 21
+			},
+			{
+				"command" : 4,
+				"file" : 6,
+				"line" : 76,
+				"parent" : 22
+			},
+			{
+				"file" : 10,
+				"parent" : 23
+			},
+			{
+				"command" : 3,
+				"file" : 10,
+				"line" : 52,
+				"parent" : 24
+			},
+			{
+				"file" : 9,
+				"parent" : 25
+			},
+			{
+				"command" : 2,
+				"file" : 9,
+				"line" : 61,
+				"parent" : 26
+			},
+			{
+				"command" : 2,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 26
+			},
+			{
 				"command" : 5,
 				"file" : 7,
 				"line" : 111,
@@ -147,32 +204,32 @@
 				"command" : 4,
 				"file" : 6,
 				"line" : 76,
-				"parent" : 19
+				"parent" : 29
 			},
 			{
-				"file" : 10,
-				"parent" : 20
+				"file" : 13,
+				"parent" : 30
 			},
 			{
 				"command" : 3,
-				"file" : 10,
+				"file" : 13,
 				"line" : 52,
-				"parent" : 21
+				"parent" : 31
 			},
 			{
-				"file" : 9,
-				"parent" : 22
+				"file" : 12,
+				"parent" : 32
 			},
 			{
 				"command" : 2,
-				"file" : 9,
+				"file" : 12,
 				"line" : 61,
-				"parent" : 23
+				"parent" : 33
 			},
 			{
 				"command" : 7,
 				"file" : 0,
-				"line" : 12,
+				"line" : 14,
 				"parent" : 0
 			}
 		]
@@ -199,6 +256,10 @@
 				{
 					"backtrace" : 2,
 					"define" : "QT_GUI_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_NEEDS_QMAIN"
 				},
 				{
 					"backtrace" : 2,
@@ -244,7 +305,7 @@
 					"path" : "E:/Huffman-Text-Compression-Algorithm/build/compressor_autogen/include"
 				},
 				{
-					"backtrace" : 25,
+					"backtrace" : 35,
 					"path" : "E:/Huffman-Text-Compression-Algorithm/src"
 				},
 				{
@@ -310,7 +371,7 @@
 				"role" : "flags"
 			},
 			{
-				"fragment" : "",
+				"fragment" : "-mwindows",
 				"role" : "flags"
 			},
 			{
@@ -339,22 +400,37 @@
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 24,
+				"backtrace" : 27,
+				"fragment" : "-lmingw32",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 27,
+				"fragment" : "E:\\mysys64\\ucrt64\\lib\\libQt6EntryPoint.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 28,
+				"fragment" : "-lshell32",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 34,
 				"fragment" : "-ld3d11",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 24,
+				"backtrace" : 34,
 				"fragment" : "-ldxgi",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 24,
+				"backtrace" : 34,
 				"fragment" : "-ldxguid",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 24,
+				"backtrace" : 34,
 				"fragment" : "-ldcomp",
 				"role" : "libraries"
 			},
